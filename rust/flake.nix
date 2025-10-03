@@ -1,53 +1,78 @@
 {
+  description = "";
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nix-community/naersk";
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    crane.url = "github:ipetkov/crane";
   };
 
   outputs =
-    inputs@{
-      self,
-      ...
-    }:
+    inputs@{ self, ... }:
     inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = import inputs.nixpkgs {
-          inherit system;
-          overlays = [ inputs.rust-overlay.overlays.default ];
-        };
-        lib = pkgs.lib;
+        pkgs = inputs.nixpkgs.legacyPackages.${system};
 
-        toolchain = pkgs.rust-bin.selectLatestNightlyWith (
-          toolchain:
-          toolchain.default.override {
-            extensions = [
-              "rust-analyzer"
-            ];
+        craneLib = inputs.crane.mkLib pkgs;
+
+        src = craneLib.cleanCargoSource ./.;
+
+        commonArgs = {
+          inherit src;
+          strictDeps = true;
+
+          buildInputs = [ ];
+        };
+
+        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
+        package = craneLib.buildPackage (
+          commonArgs
+          // {
+            inherit cargoArtifacts;
           }
         );
-
-        naersk' = pkgs.callPackage inputs.naersk {
-          cargo = toolchain;
-          rustc = toolchain;
-        };
       in
       {
-        defaultPackage = naersk'.buildPackage {
-          src = ./.;
+        checks = {
+          inherit package;
+
+          package-clippy = craneLib.cargoClippy (
+            commonArgs
+            // {
+              inherit cargoArtifacts;
+            }
+          );
+
+          package-doc = craneLib.cargoDoc (
+            commonArgs
+            // {
+              inherit cargoArtifacts;
+            }
+          );
+
+          package-fmt = craneLib.cargoFmt {
+            inherit src;
+          };
+
+          package-deny = craneLib.cargoDeny {
+            inherit src;
+          };
         };
 
-        devShell = pkgs.mkShell rec {
-          nativeBuildInputs = [
-            toolchain
-          ];
+        packages = {
+          default = package;
+        };
 
-          LD_LIBRARY_PATH = "${lib.makeLibraryPath nativeBuildInputs}";
+        devShells = {
+          default = craneLib.devShell {
+            checks = self.checks.${system};
+
+            packages = [
+              pkgs.rust-analyzer
+            ];
+          };
         };
       }
     );
