@@ -3,77 +3,86 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    neat-flakes.url = "github:wawwior/neat-flakes";
     crane.url = "github:ipetkov/crane";
   };
 
   outputs =
     inputs@{ self, ... }:
-    inputs.flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = inputs.nixpkgs.legacyPackages.${system};
 
-        craneLib = inputs.crane.mkLib pkgs;
+    inputs.neat-flakes.lib.eachSystem
+      [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ]
+      (
+        system:
+        let
 
-        src = craneLib.cleanCargoSource ./.;
+          pkgs = inputs.nixpkgs.legacyPackages.${system};
 
-        commonArgs = {
-          inherit src;
-          strictDeps = true;
+          craneLib = inputs.crane.mkLib pkgs;
 
-          buildInputs = [ ];
-        };
+          src = craneLib.cleanCargoSource ./.;
 
-        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+          commonArgs = {
+            inherit src;
+            strictDeps = true;
 
-        package = craneLib.buildPackage (
-          commonArgs
-          // {
-            inherit cargoArtifacts;
-          }
-        );
-      in
-      {
-        checks = {
-          inherit package;
+            buildInputs = [ ];
+          };
 
-          package-clippy = craneLib.cargoClippy (
+          cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+
+          crane-package = craneLib.buildPackage (
             commonArgs
             // {
               inherit cargoArtifacts;
             }
           );
+        in
+        {
+          checks.${system} = {
+            inherit crane-package;
 
-          package-doc = craneLib.cargoDoc (
-            commonArgs
-            // {
-              inherit cargoArtifacts;
-            }
-          );
+            clippy = craneLib.cargoClippy (
+              commonArgs
+              // {
+                inherit cargoArtifacts;
+              }
+            );
 
-          package-fmt = craneLib.cargoFmt {
-            inherit src;
+            doc = craneLib.cargoDoc (
+              commonArgs
+              // {
+                inherit cargoArtifacts;
+              }
+            );
+
+            fmt = craneLib.cargoFmt {
+              inherit src;
+            };
+
+            deny = craneLib.cargoDeny {
+              inherit src;
+            };
           };
 
-          package-deny = craneLib.cargoDeny {
-            inherit src;
+          packages.${system} = {
+            default = crane-package;
           };
-        };
 
-        packages = {
-          default = package;
-        };
+          devShells.${system} = {
+            default = craneLib.devShell {
+              checks = self.checks.${system};
 
-        devShells = {
-          default = craneLib.devShell {
-            checks = self.checks.${system};
-
-            packages = [
-              pkgs.rust-analyzer
-            ];
+              packages = [
+                pkgs.rust-analyzer
+              ];
+            };
           };
-        };
-      }
-    );
+        }
+      );
 }
