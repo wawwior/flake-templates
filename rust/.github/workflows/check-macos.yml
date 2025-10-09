@@ -33,4 +33,3 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - run: nix build .\#checks.${{ matrix.system }}.${{ inputs.check }}
-    

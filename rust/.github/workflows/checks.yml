@@ -12,11 +12,11 @@ permissions:
 
 jobs:
   fmt:
-    uses: ./.github/workflows/check-linux.yml
+    uses: ./.github/workflows/check-agnostic.yml
     with:
       check: fmt
   deny:
-    uses: ./.github/workflows/check-linux.yml
+    uses: ./.github/workflows/check-agnostic.yml
     with:
       check: deny
   build-linux:
@@ -39,4 +39,3 @@ jobs:
     with:
       check: clippy
     needs: build-macos
-    
