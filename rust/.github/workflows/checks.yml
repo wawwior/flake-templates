@@ -19,23 +19,18 @@ jobs:
     uses: ./.github/workflows/check-agnostic.yml
     with:
       check: deny
+  clippy:
+    uses: ./.github/workflows/check-agnostic.yml
+    with:
+      check: clippy
+    needs: [fmt, deny]
   build-linux:
     uses: ./.github/workflows/check-linux.yml
     with:
       check: crane-package
     needs: [fmt, deny]
-  clippy-linux:
-    uses: ./.github/workflows/check-linux.yml
-    with:
-      check: clippy
-    needs: build-linux
   build-macos:
     uses: ./.github/workflows/check-macos.yml
     with:
       check: crane-package
     needs: [fmt, deny]
-  clippy-macos:
-    uses: ./.github/workflows/check-macos.yml
-    with:
-      check: clippy
-    needs: build-macos
