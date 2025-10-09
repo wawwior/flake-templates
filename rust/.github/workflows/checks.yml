@@ -12,21 +12,31 @@ permissions:
 
 jobs:
   fmt:
-    uses: ./.github/workflows/check.yml
+    uses: ./.github/workflows/check-linux.yml
     with:
       check: fmt
   deny:
-    uses: ./.github/workflows/check.yml
+    uses: ./.github/workflows/check-linux.yml
     with:
       check: deny
-  build:
-    uses: ./.github/workflows/check.yml
+  build-linux:
+    uses: ./.github/workflows/check-linux.yml
     with:
       check: crane-package
     needs: [fmt, deny]
-  clippy:
-    uses: ./.github/workflows/check.yml
+  clippy-linux:
+    uses: ./.github/workflows/check-linux.yml
     with:
       check: clippy
-    needs: build
+    needs: build-linux
+  build-macos:
+    uses: ./.github/workflows/check-macos.yml
+    with:
+      check: crane-package
+    needs: [fmt, deny]
+  clippy-macos:
+    uses: ./.github/workflows/check-macos.yml
+    with:
+      check: clippy
+    needs: build-macos
     

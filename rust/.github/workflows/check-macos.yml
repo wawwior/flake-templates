@@ -1,5 +1,4 @@
-
-name: reusable flake check
+name: reusable flake check (macos)
 on:
   workflow_call:
     inputs:
@@ -15,10 +14,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-24.04
-            system: x86_64-linux
-          - runner: ubuntu-24.04-arm
-            system: aarch64-linux
           - runner: macos-15-intel
             system: x86_64-darwin
           - runner: macos-15
