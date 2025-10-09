@@ -5,4 +5,3 @@ This is a flake template for a rust develeopment environment using crane and rus
 Things to do:
 - You need to change the package name in `Cargo.toml`
 - You need to run `cargo generate-lockfile`
-- You need to add `.direnv` to `.gitignore`
