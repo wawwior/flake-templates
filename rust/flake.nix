@@ -5,6 +5,10 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     neat-flakes.url = "github:wawwior/neat-flakes";
     crane.url = "github:ipetkov/crane";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -23,7 +27,7 @@
 
           pkgs = inputs.nixpkgs.legacyPackages.${system};
 
-          craneLib = inputs.crane.mkLib pkgs;
+          craneLib = (inputs.crane.mkLib pkgs).overrideToolchain (pkgs: pkgs.rust-bin.stable.latest.default);
 
           src = craneLib.cleanCargoSource ./.;
 

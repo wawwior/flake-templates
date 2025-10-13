@@ -21,7 +21,10 @@
         system:
         let
 
-          pkgs = inputs.nixpkgs.legacyPackages.${system};
+          pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ (import inputs.rust-overlay) ];
+          };
 
           inherit (pkgs) lib;
 
