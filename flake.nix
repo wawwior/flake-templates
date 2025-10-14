@@ -5,7 +5,15 @@
       templates = {
         rust = {
           path = ./rust;
-          description = "Rust Template";
+          description = "rust template";
+        };
+        bevy = {
+          path = ./bevy;
+          description = "rust + bevy template";
+        };
+        typst = {
+          path = ./typst;
+          description = "typst template";
         };
       };
     };
