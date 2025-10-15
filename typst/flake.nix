@@ -22,7 +22,7 @@
         in
         {
           devShells.${system} = {
-            default = {
+            default = pkgs.mkShell {
               packages = [
                 pkgs.tinymist
               ];
