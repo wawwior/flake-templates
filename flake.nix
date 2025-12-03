@@ -3,6 +3,10 @@
     { ... }:
     {
       templates = {
+        simple = {
+          path = ./simple;
+          description = "default flake + neat-flakes";
+        };
         rust = {
           path = ./rust;
           description = "rust template";
